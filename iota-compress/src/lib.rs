@@ -109,7 +109,7 @@ pub fn compress(trytes: &str) -> Vec<u8> {
     }
 
     // If there are any remaining bits make sure we don't miss them
-    if encoded.len() > 0 {
+    if !encoded.is_empty() {
         // Pad the remaining bits with 0
         let remaining = 8-encoded.len();
         for _i in 0 .. remaining {
@@ -161,7 +161,7 @@ pub fn decompress(buffer: Vec<u8>) -> String {
     }
 
     // Run length decode the data
-    return run_length_decode(decoded);
+    run_length_decode(decoded)
 }
 
 
@@ -241,7 +241,7 @@ pub fn run_length_decode(encoded: String) -> String {
         }
     }
 
-    return output;
+    output
 }
 
 pub fn number_to_rle(val: usize) -> String {
@@ -280,5 +280,5 @@ pub fn rle_to_number(t1: char, t2: char, t3: char) -> usize {
         let v = it3.position(|&c| c == t3).unwrap();
         val += v * 27 * 27;
     }
-    return val;
+    val
 }
