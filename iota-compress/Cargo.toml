@@ -1,0 +1,8 @@
+[package]
+name = "iota-compress"
+version = "0.1.0"
+authors = ["Martyn Janes <martyn@obany.com>"]
+edition = "2018"
+
+[dependencies]
+lazy_static = "*"

@@ -1,0 +1,10 @@
+[package]
+name = "iota-compress-cli"
+version = "0.1.0"
+authors = ["Martyn Janes <martyn@obany.com>"]
+edition = "2018"
+
+[dependencies]
+iota-compress = { path = "../iota-compress" }
+rand = "0.6.5"
+time = "*"

@@ -1,0 +1,5 @@
+[workspace]
+members = [
+        "iota-compress",
+        "iota-compress-cli"
+        ]
