@@ -1,158 +1,173 @@
 use std::collections::HashMap;
 #[macro_use] extern crate lazy_static;
 
+struct Bits {
+    bits: u8,
+    length: u8,
+}
+
 lazy_static! {
-    static ref HUFFMAN_TABLE: HashMap<char, &'static str> = {
+    static ref HUFFMAN_TABLE: HashMap<u8, Bits> = {
         let mut m = HashMap::new();
-        m.insert('A', "0100");
-        m.insert('B', "11110");
-        m.insert('C', "0001");
-        m.insert('D', "11111");
-        m.insert('E', "11101");
-        m.insert('F', "11100");
-        m.insert('G', "10010");
-        m.insert('H', "11000");
-        m.insert('I', "10111");
-        m.insert('J', "10000");
-        m.insert('K', "10001");
-        m.insert('L', "10011");
-        m.insert('M', "00001");
-        m.insert('N', "11001");
-        m.insert('O', "10101");
-        m.insert('P', "11011");
-        m.insert('Q', "01010");
-        m.insert('R', "11010");
-        m.insert('S', "0010");
-        m.insert('T', "10100");
-        m.insert('U', "01011");
-        m.insert('V', "01111");
-        m.insert('W', "10110");
-        m.insert('X', "01101");
-        m.insert('Y', "01100");
-        m.insert('Z', "01110");
-        m.insert('9', "0011");
-        m.insert('1', "000001");
-        m.insert('2', "0000001");
-        m.insert('3', "00000001");
-        m.insert('_', "00000000");
+        m.insert(65, Bits { bits: 0b0100, length: 4 });
+        m.insert(66, Bits { bits: 0b11110, length: 5 });
+        m.insert(67, Bits { bits: 0b0001, length: 4 });
+        m.insert(68, Bits { bits: 0b11111, length: 5 });
+        m.insert(69, Bits { bits: 0b11101, length: 5 });
+        m.insert(70, Bits { bits: 0b11100, length: 5 });
+        m.insert(71, Bits { bits: 0b10010, length: 5 });
+        m.insert(72, Bits { bits: 0b11000, length: 5 });
+        m.insert(73, Bits { bits: 0b10111, length: 5 });
+        m.insert(74, Bits { bits: 0b10000, length: 5 });
+        m.insert(75, Bits { bits: 0b10001, length: 5 });
+        m.insert(76, Bits { bits: 0b10011, length: 5 });
+        m.insert(77, Bits { bits: 0b00001, length: 5 });
+        m.insert(78, Bits { bits: 0b11001, length: 5 });
+        m.insert(79, Bits { bits: 0b10101, length: 5 });
+        m.insert(80, Bits { bits: 0b11011, length: 5 });
+        m.insert(81, Bits { bits: 0b01010, length: 5 });
+        m.insert(82, Bits { bits: 0b11010, length: 5 });
+        m.insert(83, Bits { bits: 0b0010, length: 4 });
+        m.insert(84, Bits { bits: 0b10100, length: 5 });
+        m.insert(85, Bits { bits: 0b01011, length: 5 });
+        m.insert(86, Bits { bits: 0b01111, length: 5 });
+        m.insert(87, Bits { bits: 0b10110, length: 5 });
+        m.insert(88, Bits { bits: 0b01101, length: 5 });
+        m.insert(89, Bits { bits: 0b01100, length: 5 });
+        m.insert(90, Bits { bits: 0b01110, length: 5 });
+        m.insert(57, Bits { bits: 0b0011, length: 4 });
+        m.insert(49, Bits { bits: 0b000001, length: 6 });
+        m.insert(50, Bits { bits: 0b0000001, length: 7 });
+        m.insert(51, Bits { bits: 0b00000001, length: 8 });
+        m.insert(95, Bits { bits: 0b00000000, length: 8 });
         m
     };
 
-    static ref HUFFMAN_TABLE_REVERSE: HashMap<&'static str, char> = {
-        let mut m = HashMap::new();
-        m.insert("0100", 'A');
-        m.insert("11110", 'B');
-        m.insert("0001", 'C');
-        m.insert("11111", 'D');
-        m.insert("11101", 'E');
-        m.insert("11100", 'F');
-        m.insert("10010", 'G');
-        m.insert("11000", 'H');
-        m.insert("10111", 'I');
-        m.insert("10000", 'J');
-        m.insert("10001", 'K');
-        m.insert("10011", 'L');
-        m.insert("00001", 'M');
-        m.insert("11001", 'N');
-        m.insert("10101", 'O');
-        m.insert("11011", 'P');
-        m.insert("01010", 'Q');
-        m.insert("11010", 'R');
-        m.insert("0010", 'S');
-        m.insert("10100", 'T');
-        m.insert("01011", 'U');
-        m.insert("01111", 'V');
-        m.insert("10110", 'W');
-        m.insert("01101", 'X');
-        m.insert("01100", 'Y');
-        m.insert("01110", 'Z');
-        m.insert("0011", '9');
-        m.insert("000001", '1');
-        m.insert("0000001", '2');
-        m.insert("00000001", '3');
-        m.insert("00000000", '_');
+    static ref HUFFMAN_TABLE_REVERSE: Vec<HashMap<u8, u8>> = {
+        let mut m = Vec::new();
+        m.push(HashMap::new());
+        m.push(HashMap::new());
+        m.push(HashMap::new());
+        m.push(HashMap::new());
+
+        let mut rev_4: HashMap<u8, u8> = HashMap::new();
+        rev_4.insert(0b0010, 65);
+        rev_4.insert(0b1000, 67);
+        rev_4.insert(0b0100, 83);
+        rev_4.insert(0b1100, 57);
+        m.push(rev_4);
+
+        let mut rev_5: HashMap<u8, u8> = HashMap::new();
+        rev_5.insert(0b01111, 66);
+        rev_5.insert(0b11111, 68);
+        rev_5.insert(0b10111, 69);
+        rev_5.insert(0b00111, 70);
+        rev_5.insert(0b01001, 71);
+        rev_5.insert(0b00011, 72);
+        rev_5.insert(0b11101, 73);
+        rev_5.insert(0b00001, 74);
+        rev_5.insert(0b10001, 75);
+        rev_5.insert(0b11001, 76);
+        rev_5.insert(0b10000, 77);
+        rev_5.insert(0b10011, 78);
+        rev_5.insert(0b10101, 79);
+        rev_5.insert(0b11011, 80);
+        rev_5.insert(0b01010, 81);
+        rev_5.insert(0b01011, 82);
+        rev_5.insert(0b00101, 84);
+        rev_5.insert(0b11010, 85);
+        rev_5.insert(0b11110, 86);
+        rev_5.insert(0b01101, 87);
+        rev_5.insert(0b10110, 88);
+        rev_5.insert(0b00110, 89);
+        rev_5.insert(0b01110, 90);        
+        m.push(rev_5);
+
+        let mut rev_6: HashMap<u8, u8> = HashMap::new();
+        rev_6.insert(0b100000, 49);
+        m.push(rev_6);
+
+        let mut rev_7: HashMap<u8, u8> = HashMap::new();
+        rev_7.insert(0b1000000, 50);
+        m.push(rev_7);
+
+        let mut rev_8: HashMap<u8, u8> = HashMap::new();
+        rev_8.insert(0b10000000, 51);
+        rev_8.insert(0b00000000, 95);
+        m.push(rev_8);
         m
-    };    
+    };
 }
 
-lazy_static! {
-    static ref RLE_ALPHABET: Vec<char> = vec!['9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-}
+const END_OF_DATA: u8 = 95;
 
-const END_OF_DATA: char = '_';
+const RUN_MIN_LENGTH: u16 = 3;
+const ONE_TRYTE_MAX: u16 = 26;
+const TWO_TRYTE_MAX: u16 = 728;
+const THREE_TRYTE_MAX: u16 = 19682;
 
-const RUN_MIN_LENGTH: usize = 3;
-const ONE_TRYTE_MAX: usize = 26;
-const TWO_TRYTE_MAX: usize = 728;
-const THREE_TRYTE_MAX: usize = 19682;
-
-pub fn compress(trytes: &str) -> Vec<u8> {
+pub fn compress(trytes: &Vec<u8>) -> Vec<u8> {
     // First run length encode the data to reduce the content
-    let mut rle = run_length_encode(trytes);
+    let mut rle_encoded: Vec<u8> = Vec::new();
+    run_length_encode(trytes, &mut rle_encoded);
 
     // Add the end of data marker so the decompress knows
     // when to finish processing the data
-    rle.push(END_OF_DATA);
+    rle_encoded.push(END_OF_DATA);
 
     // Convert the rle encoded trytes to their huffman form
-    let mut bytes: Vec<u8> = Vec::new();
-    let mut encoded: String = String::new();
-    for c in rle.chars() {
-        encoded += HUFFMAN_TABLE[&c];
+    let mut huffman_encoded: Vec<u8> = Vec::new();
+    let mut encoded_bits = 0;
+    let mut encoded_bits_length = 0;
 
-        while encoded.len() >= 8 {
-            let val = &encoded[0..8];
-            let res = u8::from_str_radix(&val, 2);
-            bytes.push(res.unwrap());
-            encoded = encoded[8..].to_string();
+    for i in 0..rle_encoded.len() {
+        let h_bits = &HUFFMAN_TABLE[&rle_encoded[i]];
+        for j in (0..(h_bits.length)).rev() {
+            encoded_bits |= ((h_bits.bits >> j) & 0x01) << encoded_bits_length;
+            encoded_bits_length = encoded_bits_length + 1;
+            if encoded_bits_length == 8 {
+                huffman_encoded.push(encoded_bits);
+                encoded_bits_length = 0;
+                encoded_bits = 0;
+            }
         }
     }
 
     // If there are any remaining bits make sure we don't miss them
-    if !encoded.is_empty() {
-        // Pad the remaining bits with 0
-        let remaining = 8-encoded.len();
-        for _i in 0 .. remaining {
-            encoded += "0";
-        }
-
-        bytes.push(u8::from_str_radix(&encoded, 2).unwrap());
+    if encoded_bits_length > 0 {
+        huffman_encoded.push(encoded_bits);
     }
 
-    bytes
+    huffman_encoded
 }
 
-pub fn decompress(buffer: Vec<u8>) -> String {
+pub fn decompress(bytes: &Vec<u8>) -> Vec<u8> {
     // Convert the huffman encoded data back to the full rle
-    let mut decoded: String = String::new();
-    let mut buffer_pos = 0;
+    let mut decoded: Vec<u8> = Vec::new();
+    let mut read_pos = 0;
     let mut found_end = false;
-    let mut bit_index = 7;
+    let mut bit_index = 0;
+
     while !found_end {
-        let mut key: String = String::new();
+        let mut key = 0;
+        let mut key_bit_count = 0;
 
         // Build a key until we find it in the huffman table
-        while !HUFFMAN_TABLE_REVERSE.contains_key(&*key) {
-            // if bufferPos > buffer.len() {
-            //     throw new Error("End of data reached while decompressing");
-            // }
+        while HUFFMAN_TABLE_REVERSE[key_bit_count].get(&key) == None {
+            key |= ((bytes[read_pos] >> bit_index) & 0x01) << key_bit_count;
+            key_bit_count = key_bit_count + 1;
+            bit_index = bit_index + 1;
 
-            // If we have run out of bits in the current buffer value
-            // move to the next one
-            if bit_index == -1 {
-                buffer_pos = buffer_pos + 1;
-                bit_index = 7;
+            if bit_index == 8 {
+                read_pos= read_pos + 1;
+                bit_index = 0;
             }
-
-            // Add the next bit from the buffer to the key
-            key.push(if (buffer[buffer_pos] >> bit_index) & 0x01 == 0x01 { '1' } else { '0' });
-            bit_index = bit_index -1;
         }
 
         // A key was found, if it was end of data then
         // finished the decompress, otherwise just add it
         // to the decompressed data
-        let val = HUFFMAN_TABLE_REVERSE[&*key];
+        let val = HUFFMAN_TABLE_REVERSE[key_bit_count][&key];
         if val == END_OF_DATA {
             found_end = true;
         } else {
@@ -164,121 +179,97 @@ pub fn decompress(buffer: Vec<u8>) -> String {
     run_length_decode(decoded)
 }
 
+pub fn run_length_encode(trytes: &Vec<u8>, rle_encoded: &mut Vec<u8>) {
+    let mut prev = trytes[0];
+    let mut count: u16 = 1;
 
-pub fn run_length_encode(trytes: &str) -> String {
-    let mut chars = trytes.chars();
-
-    let mut encoded: String = String::new();
-    let mut prev = chars.next().unwrap();
-    let mut count: usize = 1;
-
-    for c in chars {
-        if c != prev {
-            encoded += &append_run(count, prev);
+    for i in 1..trytes.len() {
+        if trytes[i] != prev {
+            append_run(rle_encoded, count, prev);
             count = 1;
-            prev = c;
+            prev = trytes[i];
         } else {
             count = count + 1;
         }
     }
 
-    encoded += &append_run(count, prev);
-
-    encoded
+    append_run(rle_encoded, count, prev);
 }
 
-pub fn append_run(count: usize, prev: char) -> String {
-    let mut encoded: String = String::new();
-    let mut remaining: usize = count;
-
-    while remaining >= RUN_MIN_LENGTH {
-        let current_run_length = if remaining > THREE_TRYTE_MAX { THREE_TRYTE_MAX } else { remaining };
-        encoded.push_str(&number_to_rle(current_run_length));
+pub fn append_run(encoded: &mut Vec<u8>, count: u16, prev: u8) {
+    if count == 1 {
         encoded.push(prev);
-        remaining -= current_run_length;
-    }
+    } else {
+        let mut remaining: u16 = count;
 
-    if remaining > 0 {
-        for _i in 0..remaining {
-            encoded.push(prev);
+        while remaining >= RUN_MIN_LENGTH {
+            let current_run_length = if remaining > THREE_TRYTE_MAX { THREE_TRYTE_MAX } else { remaining };
+            number_to_rle(encoded, prev, current_run_length);
+            remaining -= current_run_length;
+        }
+
+        if remaining > 0 {
+            for _i in 0..remaining {
+                encoded.push(prev);
+            }
         }
     }
-
-    encoded
 }
 
-pub fn run_length_decode(encoded: String) -> String {
-    let mut output: String = String::new();
-    let mut it = encoded.chars();
+pub fn run_length_decode(encoded: Vec<u8>) -> Vec<u8> {
+    let mut decoded: Vec<u8> = Vec::new();
+    let mut i = 0;
 
-    while let Some(c) = it.next() {
-        if c == '1' {
-            let rle_length_1 = it.next().unwrap();
-            let ch = it.next().unwrap();
-            let length = rle_to_number(rle_length_1, ' ', ' ');
-            for _i in 0..length {
-                output.push(ch);
-            }
-        } else if c == '2' {
-            let rle_length_1 = it.next().unwrap();
-            let rle_length_2 = it.next().unwrap();
-            let ch = it.next().unwrap();
-            let length = rle_to_number(rle_length_1, rle_length_2, ' ');
-            for _i in 0..length {
-                output.push(ch);
-            }
-        } else if c == '3' {
-            let rle_length_1 = it.next().unwrap();
-            let rle_length_2 = it.next().unwrap();
-            let rle_length_3 = it.next().unwrap();
-            let ch = it.next().unwrap();
-            let length = rle_to_number(rle_length_1, rle_length_2, rle_length_3);
-            for _i in 0..length {
-                output.push(ch);
-            }
+    while i < encoded.len() {
+        if encoded[i] == 49 {
+            rle_to_number(&mut decoded, encoded[i + 2], encoded[i + 1], 0, 0);
+            i += 2;
+        } else if encoded[i] == 50 {
+            rle_to_number(&mut decoded, encoded[i + 3], encoded[i + 1], encoded[i + 2], 0);
+            i += 3;
+        } else if encoded[i] == 50 {
+            rle_to_number(&mut decoded, encoded[i + 4], encoded[i + 1], encoded[i + 2], encoded[i + 3]);
+            i += 4;
         } else {
-            output.push(c);
+            decoded.push(encoded[i]);
+            i = i + 1;
         }
     }
 
-    output
+    decoded
 }
 
-pub fn number_to_rle(val: usize) -> String {
-    let mut rle: String = String::new();
+pub fn number_to_rle(encoded: &mut Vec<u8>, char_code: u8, val: u16) {
     if val <= ONE_TRYTE_MAX {
-        rle.push('1');
-        rle.push(RLE_ALPHABET[val]);
+        encoded.push(49);
+        encoded.push(if val == 0 { 57 } else { val as u8 + 64 });
     } else if val <= TWO_TRYTE_MAX {
         let val1 = val % 27;
         let val2 = (val - val1) / 27;
-        rle.push('2');
-        rle.push(RLE_ALPHABET[val1]);
-        rle.push(RLE_ALPHABET[val2]);
+        encoded.push(50);
+        encoded.push(if val1 == 0 { 57 } else { val1 as u8 + 64 });
+        encoded.push(if val2 == 0 { 57 } else { val2 as u8 + 64 });
     } else {
         let val1 = val % 27;
         let val2 = ((val - val1) / 27) % 27;
         let val3 = (val - (val2 * 27) - val1) / (27 * 27);
-        rle.push('3');
-        rle.push(RLE_ALPHABET[val1]);
-        rle.push(RLE_ALPHABET[val2]);
-        rle.push(RLE_ALPHABET[val3]);
+        encoded.push(51);
+        encoded.push(if val1 == 0 { 57 } else { val1 as u8 + 64 });
+        encoded.push(if val2 == 0 { 57 } else { val2 as u8 + 64 });
+        encoded.push(if val3 == 0 { 57 } else { val3 as u8 + 64 });
     }
-    rle
+    encoded.push(char_code);
 }
 
-pub fn rle_to_number(t1: char, t2: char, t3: char) -> usize {
-    let mut it1 = RLE_ALPHABET.iter();
-    let mut val = it1.position(|&c| c == t1).unwrap();
-    if t2 != ' ' {
-        let mut it2 = RLE_ALPHABET.iter();
-        let v = it2.position(|&c| c == t2).unwrap();
-        val += v * 27;
+pub fn rle_to_number(decoded: &mut Vec<u8>, char_code: u8, t1: u8, t2: u8, t3: u8) {
+    let mut val: u16 = if t1 == 57 { 0 } else { t1 as u16 - 64 };
+    if t2 != 0 {
+        val += (if t2 == 57 { 0 } else { t2 - 64 }) as u16 * 27;
     }
-    if t3 != ' ' {
-        let mut it3 = RLE_ALPHABET.iter();
-        let v = it3.position(|&c| c == t3).unwrap();
-        val += v * 27 * 27;
+    if t3 != 0 {
+        val += (if t3 == 57 { 0 } else { t3 - 64 }) as u16 * 27 * 27;
     }
-    val
+    for _i in 0..val {
+        decoded.push(char_code);
+    }
 }
