@@ -108,25 +108,28 @@ const THREE_TRYTE_MAX: u16 = 19682;
 
 pub fn compress(trytes: &Vec<u8>) -> Vec<u8> {
     // First run length encode the data to reduce the content
-    let mut rle_encoded: Vec<u8> = Vec::new();
-    run_length_encode(trytes, &mut rle_encoded);
+    let mut rle_encoded: Vec<u8> = vec![0; trytes.len() + 1];
+    let mut rle_write_pos = run_length_encode(trytes, &mut rle_encoded);
 
     // Add the end of data marker so the decompress knows
     // when to finish processing the data
-    rle_encoded.push(END_OF_DATA);
+    rle_encoded[rle_write_pos] = END_OF_DATA;
+    rle_write_pos = rle_write_pos + 1;
 
     // Convert the rle encoded trytes to their huffman form
-    let mut huffman_encoded: Vec<u8> = Vec::new();
+    let mut huffman_encoded: Vec<u8> = vec![0; rle_write_pos];
+    let mut huffman_encoded_write_pos = 0;
     let mut encoded_bits = 0;
     let mut encoded_bits_length = 0;
 
-    for i in 0..rle_encoded.len() {
+    for i in 0..rle_write_pos {
         let h_bits = &HUFFMAN_TABLE[&rle_encoded[i]];
         for j in (0..(h_bits.length)).rev() {
             encoded_bits |= ((h_bits.bits >> j) & 0x01) << encoded_bits_length;
             encoded_bits_length = encoded_bits_length + 1;
             if encoded_bits_length == 8 {
-                huffman_encoded.push(encoded_bits);
+                huffman_encoded[huffman_encoded_write_pos] = encoded_bits;
+                huffman_encoded_write_pos = huffman_encoded_write_pos + 1;
                 encoded_bits_length = 0;
                 encoded_bits = 0;
             }
@@ -135,10 +138,11 @@ pub fn compress(trytes: &Vec<u8>) -> Vec<u8> {
 
     // If there are any remaining bits make sure we don't miss them
     if encoded_bits_length > 0 {
-        huffman_encoded.push(encoded_bits);
+        huffman_encoded[huffman_encoded_write_pos] = encoded_bits;
+        huffman_encoded_write_pos = huffman_encoded_write_pos + 1;
     }
 
-    huffman_encoded
+    huffman_encoded[0..huffman_encoded_write_pos].to_vec()
 }
 
 pub fn decompress(bytes: &Vec<u8>) -> Vec<u8> {
@@ -176,16 +180,17 @@ pub fn decompress(bytes: &Vec<u8>) -> Vec<u8> {
     }
 
     // Run length decode the data
-    run_length_decode(decoded)
+    run_length_decode(&decoded)
 }
 
-fn run_length_encode(trytes: &Vec<u8>, rle_encoded: &mut Vec<u8>) {
+fn run_length_encode(trytes: &Vec<u8>, rle_encoded: &mut Vec<u8>) -> usize {
+    let mut write_pos: usize = 0;
     let mut prev = trytes[0];
     let mut count: u16 = 1;
 
     for i in 1..trytes.len() {
         if trytes[i] != prev {
-            append_run(rle_encoded, count, prev);
+            write_pos = append_run(rle_encoded, write_pos, count, prev);
             count = 1;
             prev = trytes[i];
         } else {
@@ -193,30 +198,34 @@ fn run_length_encode(trytes: &Vec<u8>, rle_encoded: &mut Vec<u8>) {
         }
     }
 
-    append_run(rle_encoded, count, prev);
+    append_run(rle_encoded, write_pos, count, prev)
 }
 
-fn append_run(encoded: &mut Vec<u8>, count: u16, prev: u8) {
+fn append_run(encoded: &mut Vec<u8>, write_pos: usize, count: u16, prev: u8) -> usize {
+    let mut local_write_pos = write_pos;
     if count == 1 {
-        encoded.push(prev);
+        encoded[local_write_pos] = prev;
+        local_write_pos = local_write_pos + 1;
     } else {
         let mut remaining: u16 = count;
 
         while remaining >= RUN_MIN_LENGTH {
             let current_run_length = if remaining > THREE_TRYTE_MAX { THREE_TRYTE_MAX } else { remaining };
-            number_to_rle(encoded, prev, current_run_length);
+            local_write_pos = number_to_rle(encoded, local_write_pos, prev, current_run_length);
             remaining -= current_run_length;
         }
 
         if remaining > 0 {
             for _i in 0..remaining {
-                encoded.push(prev);
+                encoded[local_write_pos] = prev;
+                local_write_pos = local_write_pos + 1;
             }
         }
     }
+    local_write_pos
 }
 
-fn run_length_decode(encoded: Vec<u8>) -> Vec<u8> {
+fn run_length_decode(encoded: &Vec<u8>) -> Vec<u8> {
     let mut decoded: Vec<u8> = Vec::new();
     let mut i = 0;
 
@@ -239,26 +248,38 @@ fn run_length_decode(encoded: Vec<u8>) -> Vec<u8> {
     decoded
 }
 
-fn number_to_rle(encoded: &mut Vec<u8>, char_code: u8, val: u16) {
+fn number_to_rle(encoded: &mut Vec<u8>, write_pos: usize, char_code: u8, val: u16) -> usize {
+    let mut local_write_pos = write_pos;
     if val <= ONE_TRYTE_MAX {
-        encoded.push(49);
-        encoded.push(if val == 0 { 57 } else { val as u8 + 64 });
+        encoded[local_write_pos] = 49;
+        local_write_pos = local_write_pos + 1;
+        encoded[local_write_pos] = if val == 0 { 57 } else { val as u8 + 64 };
+        local_write_pos = local_write_pos + 1;
     } else if val <= TWO_TRYTE_MAX {
         let val1 = val % 27;
         let val2 = (val - val1) / 27;
-        encoded.push(50);
-        encoded.push(if val1 == 0 { 57 } else { val1 as u8 + 64 });
-        encoded.push(if val2 == 0 { 57 } else { val2 as u8 + 64 });
+        encoded[local_write_pos] = 50;
+        local_write_pos = local_write_pos + 1;
+        encoded[local_write_pos] = if val1 == 0 { 57 } else { val1 as u8 + 64 };
+        local_write_pos = local_write_pos + 1;
+        encoded[local_write_pos] = if val2 == 0 { 57 } else { val2 as u8 + 64 };
+        local_write_pos = local_write_pos + 1;
     } else {
         let val1 = val % 27;
         let val2 = ((val - val1) / 27) % 27;
         let val3 = (val - (val2 * 27) - val1) / (27 * 27);
-        encoded.push(51);
-        encoded.push(if val1 == 0 { 57 } else { val1 as u8 + 64 });
-        encoded.push(if val2 == 0 { 57 } else { val2 as u8 + 64 });
-        encoded.push(if val3 == 0 { 57 } else { val3 as u8 + 64 });
+        encoded[local_write_pos] = 51;
+        local_write_pos = local_write_pos + 1;
+        encoded[local_write_pos] = if val1 == 0 { 57 } else { val1 as u8 + 64 };
+        local_write_pos = local_write_pos + 1;
+        encoded[local_write_pos] = if val2 == 0 { 57 } else { val2 as u8 + 64 };
+        local_write_pos = local_write_pos + 1;
+        encoded[local_write_pos] = if val3 == 0 { 57 } else { val3 as u8 + 64 };
+        local_write_pos = local_write_pos + 1;
     }
-    encoded.push(char_code);
+    encoded[local_write_pos] = char_code;
+    local_write_pos = local_write_pos + 1;
+    local_write_pos
 }
 
 fn rle_to_number(decoded: &mut Vec<u8>, char_code: u8, t1: u8, t2: u8, t3: u8) {

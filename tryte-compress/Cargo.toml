@@ -1,6 +1,6 @@
 [package]
 name = "tryte-compress"
-version = "0.1.0"
+version = "0.1.2"
 authors = ["Martyn Janes <martyn@obany.com>"]
 edition = "2018"
 

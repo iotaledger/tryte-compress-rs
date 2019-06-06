@@ -53,11 +53,11 @@ fn main() {
 fn generate_random() -> Vec<u8> {
     let tryte_alphabet: Vec<u8> = vec![57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90];
 
-    let mut output: Vec<u8> = Vec::new();
+    let mut output: Vec<u8> = vec![0; PACKET_SIZE];
 
     for _i in 0..PACKET_SIZE {
         let num = rand::thread_rng().gen_range(0, tryte_alphabet.len());
-        output.push(tryte_alphabet[num]);
+        output[_i] = tryte_alphabet[num];
     }
 
     output
