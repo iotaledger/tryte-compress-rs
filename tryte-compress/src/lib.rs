@@ -179,7 +179,7 @@ pub fn decompress(bytes: &Vec<u8>) -> Vec<u8> {
     run_length_decode(decoded)
 }
 
-pub fn run_length_encode(trytes: &Vec<u8>, rle_encoded: &mut Vec<u8>) {
+fn run_length_encode(trytes: &Vec<u8>, rle_encoded: &mut Vec<u8>) {
     let mut prev = trytes[0];
     let mut count: u16 = 1;
 
@@ -196,7 +196,7 @@ pub fn run_length_encode(trytes: &Vec<u8>, rle_encoded: &mut Vec<u8>) {
     append_run(rle_encoded, count, prev);
 }
 
-pub fn append_run(encoded: &mut Vec<u8>, count: u16, prev: u8) {
+fn append_run(encoded: &mut Vec<u8>, count: u16, prev: u8) {
     if count == 1 {
         encoded.push(prev);
     } else {
@@ -216,7 +216,7 @@ pub fn append_run(encoded: &mut Vec<u8>, count: u16, prev: u8) {
     }
 }
 
-pub fn run_length_decode(encoded: Vec<u8>) -> Vec<u8> {
+fn run_length_decode(encoded: Vec<u8>) -> Vec<u8> {
     let mut decoded: Vec<u8> = Vec::new();
     let mut i = 0;
 
@@ -239,7 +239,7 @@ pub fn run_length_decode(encoded: Vec<u8>) -> Vec<u8> {
     decoded
 }
 
-pub fn number_to_rle(encoded: &mut Vec<u8>, char_code: u8, val: u16) {
+fn number_to_rle(encoded: &mut Vec<u8>, char_code: u8, val: u16) {
     if val <= ONE_TRYTE_MAX {
         encoded.push(49);
         encoded.push(if val == 0 { 57 } else { val as u8 + 64 });
@@ -261,7 +261,7 @@ pub fn number_to_rle(encoded: &mut Vec<u8>, char_code: u8, val: u16) {
     encoded.push(char_code);
 }
 
-pub fn rle_to_number(decoded: &mut Vec<u8>, char_code: u8, t1: u8, t2: u8, t3: u8) {
+fn rle_to_number(decoded: &mut Vec<u8>, char_code: u8, t1: u8, t2: u8, t3: u8) {
     let mut val: u16 = if t1 == 57 { 0 } else { t1 as u16 - 64 };
     if t2 != 0 {
         val += (if t2 == 57 { 0 } else { t2 - 64 }) as u16 * 27;

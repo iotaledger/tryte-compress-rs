@@ -1,10 +1,9 @@
-extern crate iota_compress;
+extern crate tryte_compress;
 extern crate rand;
 extern crate time;
 extern crate std;
 
-use iota_compress::compress;
-use iota_compress::decompress;
+use tryte_compress::{compress, decompress};
 use rand::Rng;
 use time::PreciseTime;
 use std::str;

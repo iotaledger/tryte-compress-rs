@@ -3,7 +3,7 @@ extern crate criterion;
 extern crate rand;
 
 use criterion::Criterion;
-use iota_compress::{compress, decompress};
+use tryte_compress::{compress, decompress};
 use rand::Rng;
 
 const PACKET_SIZE: usize = 2673;
